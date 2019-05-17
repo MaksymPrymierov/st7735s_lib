@@ -15,7 +15,9 @@ ST7735s::Display::Display()
                 error = true;
         }
 
-        fill(0x0000);
+        background = 0;
+        fill(background);
+        object_metadata.fill(-1);
 }
 
 ST7735s::Display::~Display()
@@ -46,13 +48,12 @@ void ST7735s::Display::drawUpdate()
 int ST7735s::Display::exec()
 {
         for (uint8_t i = 0; true; ++i) {
+                _fill(background);
+                object_metadata.fill(-1);
+
+                updateObjects();
                 drawUpdate();
-
-                _fill(0x0000);
-
-                _fillRect(20, 160 - (i / 1.6), 10, 10, 0x5444);
-                _fillRect(50, i / 1.6, 30, 40, 0x1275);
-                _fillRect(80, 160 - (i / 1.6), 20, 30, 0x8760);
+                drawObjects();
 
                 frame_buffer_file = open(frame_buffer_path.data(), O_WRONLY);
                 if (error) {
@@ -75,7 +76,29 @@ void ST7735s::Display::_fill(uint16_t color)
 
 void ST7735s::Display::_setPixel(uint8_t x, uint8_t y, uint16_t color)
 {
+        if ((x >= widht) || (y >= height)) {
+                return;
+        }
+
         frame_buffer[x + widht * y] = color;
+}
+
+void ST7735s::Display::setObjMetaData(uint8_t x, uint8_t y, int data)
+{
+        if ((x >= widht) || (y >= height)) {
+                return;
+        }
+
+        object_metadata[x + widht * y] = data;
+}
+
+int ST7735s::Display::getObjMetaData(uint8_t x, uint8_t y)
+{
+        if ((x >= widht) || (y >= height)) {
+                return -1;
+        }
+
+        return object_metadata[x + widht * y];
 }
 
  void ST7735s::Display::_fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color)
@@ -98,6 +121,52 @@ void ST7735s::Display::_setPixel(uint8_t x, uint8_t y, uint16_t color)
                 }
         }
  }
+
+ void ST7735s::Display::drawObjects()
+ {
+        for (std::vector<ST7735s::Object*>::size_type iter = 0; iter < objects.size(); ++iter) {
+                for (int i = 0; i < objects[iter]->getW(); ++i) {
+                        for (int j = 0; j < objects[iter]->getH(); ++j) {
+                                _setPixel(objects[iter]->getX() + i, objects[iter]->getY() + j,
+                                          objects[iter]->getBuffer()[i + objects[iter]->getW() * j]);
+                                if (getObjMetaData(objects[iter]->getX() + i, objects[iter]->getY() + j) != -1) {
+                                        objects[iter]->setIntersection(true);
+                                        std::clog << "Boom!!!" << std::endl;
+                                }
+                                setObjMetaData(objects[iter]->getX() + i, objects[iter]->getY() + j, int(iter));
+                        }
+                }
+        }
+ }
+
+void ST7735s::Display::updateObjects()
+{
+        for (std::vector<ST7735s::Object*>::size_type iter = 0; iter < objects.size(); ++iter) {
+                if (objects[iter]->getMove() && objects[iter]->isMoved()) {
+                        if (!objects[iter]->getMoveDir() && objects[iter]->getY() + 1 < height) {
+                                objects[iter]->setY(objects[iter]->getY() + 1);
+                        } else if (objects[iter]->getMoveDir() && objects[iter]->getY() - 1 > 0) {
+                                objects[iter]->setY(objects[iter]->getY() - 1);
+                        } else {
+                                objects[iter]->setOwerflow(true);
+                                if (objects[iter]->isOwerflowCtl()) {
+                                        objects[iter]->resetOwerflow();
+                                }
+                        }
+                } else if (!objects[iter]->getMove() && !objects[iter]->isMoved()) {
+                        if (!objects[iter]->getMoveDir() && objects[iter]->getX() + 1 < widht) {
+                                objects[iter]->setX(objects[iter]->getX() + 1);
+                        } else if (objects[iter]->getMoveDir() && objects[iter]->getX() - 1 > 0) {
+                                objects[iter]->setX(objects[iter]->getX() - 1);
+                        } else {
+                                objects[iter]->setOwerflow(true);
+                                if (objects[iter]->isOwerflowCtl()) {
+                                        objects[iter]->resetOwerflow();
+                                }
+                        }
+                }
+        }
+}
 
 void ST7735s::Display::fill(uint16_t color) 
 {
