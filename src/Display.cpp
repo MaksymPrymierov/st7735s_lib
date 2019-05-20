@@ -131,7 +131,7 @@ int ST7735s::Display::getObjMetaData(uint8_t x, uint8_t y)
                                           objects[iter]->getBuffer()[i + objects[iter]->getW() * j]);
                                 if (getObjMetaData(objects[iter]->getX() + i, objects[iter]->getY() + j) != -1) {
                                         objects[iter]->setIntersection(true);
-                                        std::clog << "Boom!!!" << std::endl;
+                           //             std::clog << "Boom!!!" << std::endl;
                                 }
                                 setObjMetaData(objects[iter]->getX() + i, objects[iter]->getY() + j, int(iter));
                         }
@@ -142,6 +142,8 @@ int ST7735s::Display::getObjMetaData(uint8_t x, uint8_t y)
 void ST7735s::Display::updateObjects()
 {
         for (std::vector<ST7735s::Object*>::size_type iter = 0; iter < objects.size(); ++iter) {
+                objects[iter]->update();
+
                 if (objects[iter]->getMove() && objects[iter]->isMoved()) {
                         if (!objects[iter]->getMoveDir() && objects[iter]->getY() + 1 < height) {
                                 objects[iter]->setY(objects[iter]->getY() + 1);
@@ -153,7 +155,7 @@ void ST7735s::Display::updateObjects()
                                         objects[iter]->resetOwerflow();
                                 }
                         }
-                } else if (!objects[iter]->getMove() && !objects[iter]->isMoved()) {
+                } else if (!objects[iter]->getMove() && objects[iter]->isMoved()) {
                         if (!objects[iter]->getMoveDir() && objects[iter]->getX() + 1 < widht) {
                                 objects[iter]->setX(objects[iter]->getX() + 1);
                         } else if (objects[iter]->getMoveDir() && objects[iter]->getX() - 1 > 0) {

@@ -66,6 +66,8 @@ namespace ST7735s
 
                 void fill(uint16_t color);
 
+                virtual void update();
+
         protected:
                 inline void allocBuffer() { d.buffer = new uint16_t[d.size]; }
 
@@ -81,5 +83,17 @@ namespace ST7735s
         public:
                 Block(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color);
                 ~Block();
+        };
+
+        class Car : public Object
+        {
+        public:
+                Car(uint8_t x, uint8_t y, uint16_t color);
+                ~Car() = default;
+
+                void update();
+
+        private:
+                void draw();
         };
 };
