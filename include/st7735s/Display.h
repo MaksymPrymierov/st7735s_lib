@@ -4,6 +4,7 @@
 #include <queue>
 #include <cstdint>
 #include <cstring>
+#include <iostream>
 
 #include <st7735s/Object.h>
 
@@ -25,6 +26,12 @@ namespace ST7735s
                 void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color);
                 void loadImg(const char *path);
                 inline void addObject(Object *obj) { objects.push_back(obj); }
+                static void exit(Display* disp) 
+                {
+                        disp->need_exit = true;
+                        disp->objects.clear();
+                }
+                void connect(bool* sygnal, Display* disp, void (*handler)(Display*));
 
         private:
                 enum paint_function : uint8_t
@@ -42,6 +49,13 @@ namespace ST7735s
                         uint8_t h;
                 };
 
+                struct handler_sygnal
+                {
+                        bool *sygn;
+                        Display *disp;
+                        void (*handler)(Display*);
+                };
+
                 bool error = false;
                 int frame_buffer_file;
                 std::string_view frame_buffer_path;
@@ -50,10 +64,10 @@ namespace ST7735s
                 std::array<int, size_buffer> object_metadata;
 
                 std::queue<struct paint_task> paint_queue;
+                std::vector<struct handler_sygnal> sygnals;
                 std::vector<ST7735s::Object*> objects;
 
                 uint16_t background;
-
                 void drawUpdate();
                 void eventUpdate();
                 void drawObjects();
@@ -63,5 +77,9 @@ namespace ST7735s
                 void _fill(uint16_t color);
                 void _setPixel(uint8_t x, uint8_t y, uint16_t color);
                 void _fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color);
+                bool need_exit = false;
+
+                // handlers
+                void handlerSygnals();
         };
 };

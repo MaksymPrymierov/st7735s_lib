@@ -62,7 +62,7 @@ namespace ST7735s
                 inline void setOriginY(uint8_t y) { origin_y = y; }
                 inline void setIntersection(bool intersection) { d.intersection = intersection; }
 
-                inline void resetOwerflow() { d.x = origin_x; d.y = origin_y; d.owerflow = false; }
+                virtual void resetOwerflow() { d.x = origin_x; d.y = origin_y; d.owerflow = false; }
 
                 void fill(uint16_t color);
 
@@ -84,16 +84,33 @@ namespace ST7735s
                 Block(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color);
                 ~Block();
         };
+};
 
-        class Car : public Object
+namespace RG
+{
+        class EvilCar : public ST7735s::Object
         {
         public:
-                Car(uint8_t x, uint8_t y, uint16_t color);
-                ~Car() = default;
+                EvilCar();
+                ~EvilCar() = default;
 
-                void update();
+                void resetOwerflow();
 
         private:
+                void draw();
+        };
+
+        class PlayerCar : public ST7735s::Object
+        {
+        public:
+                PlayerCar();
+                ~PlayerCar() = default;
+
+                void update();
+                bool* need_exit() { return &_need_exit; }
+
+        private:
+                bool _need_exit = false;
                 void draw();
         };
 };

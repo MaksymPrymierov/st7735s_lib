@@ -47,10 +47,11 @@ void ST7735s::Display::drawUpdate()
 
 int ST7735s::Display::exec()
 {
-        for (uint8_t i = 0; true; ++i) {
+        while (true) {
                 _fill(background);
                 object_metadata.fill(-1);
 
+                handlerSygnals();
                 updateObjects();
                 drawUpdate();
                 drawObjects();
@@ -62,11 +63,14 @@ int ST7735s::Display::exec()
                 }
 
                 write(frame_buffer_file, frame_buffer, sizeof(frame_buffer));
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 close(frame_buffer_file);
-        }
 
-        return 0;
+                if (need_exit) {
+                        return 0;
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
 }
 
 void ST7735s::Display::_fill(uint16_t color)
@@ -131,13 +135,22 @@ int ST7735s::Display::getObjMetaData(uint8_t x, uint8_t y)
                                           objects[iter]->getBuffer()[i + objects[iter]->getW() * j]);
                                 if (getObjMetaData(objects[iter]->getX() + i, objects[iter]->getY() + j) != -1) {
                                         objects[iter]->setIntersection(true);
-                           //             std::clog << "Boom!!!" << std::endl;
                                 }
                                 setObjMetaData(objects[iter]->getX() + i, objects[iter]->getY() + j, int(iter));
                         }
                 }
         }
  }
+
+void ST7735s::Display::handlerSygnals()
+{
+        for (std::vector<ST7735s::Object*>::size_type iter = 0; iter < sygnals.size(); ++iter) {
+                if (*sygnals[iter].sygn) {
+                        sygnals[iter].handler(sygnals[iter].disp);
+                        *sygnals[iter].sygn = false;
+                }
+        }
+}
 
 void ST7735s::Display::updateObjects()
 {
@@ -204,4 +217,15 @@ void ST7735s::Display::fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint
         task.color = color;
 
         paint_queue.push(task);
+}
+
+void ST7735s::Display::connect(bool* sygn, Display *disp, void (*handler)(Display*))
+{
+        struct handler_sygnal sygnal;
+
+        sygnal.sygn = sygn;
+        sygnal.handler = handler;
+        sygnal.disp = disp;
+
+        sygnals.push_back(sygnal);
 }

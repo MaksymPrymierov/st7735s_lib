@@ -36,23 +36,24 @@ void ST7735s::Object::fill(uint16_t color)
         memset(d.buffer, color, d.size * 2);
 }
 
-ST7735s::Car::Car(uint8_t x, uint8_t y, uint16_t color) : Object()
+RG::PlayerCar::PlayerCar() : Object()
 {
-        setX(x);
-        setOriginX(x);
-        setY(y);
-        setOriginY(y);
+        setX(50);
+        setOriginX(50);
+        setY(119);
+        setOriginY(119);
         setW(30);
         setH(40);
         setSize(30 * 40);
-        setColor(color);
+        setColor(0x543a);
+        setOwerflowCtl(false);
 
         allocBuffer();
 
-        fill(color);
+        fill(0x543a);
 }
 
-void ST7735s::Car::update()
+void RG::PlayerCar::update()
 {
         int8_t dir;
         FILE* file = fopen("/sys/class/mpu6050/direction_y", "r");
@@ -68,4 +69,47 @@ void ST7735s::Car::update()
         }
 
         fclose(file);
+
+        if (isIntersection()) {
+                _need_exit = true;
+        } 
+}
+
+RG::EvilCar::EvilCar() : ST7735s::Object()
+{
+        setX(10);
+        setOriginX(10);
+        setY(0);
+        setOriginY(0);
+        setW(30);
+        setH(40);
+        setSize(30 * 40);
+        setColor(0x3f14);
+        
+        allocBuffer();
+
+        fill(0x3f14);
+}
+
+void RG::EvilCar::resetOwerflow()
+{
+        int roadId = rand() % 3;
+
+        switch (roadId) {
+        case 0:
+                setX(10);
+                break;
+        case 1:
+                setX(50);
+                break;
+        case 2:
+                setX(90);
+                break;
+        default:
+                setX(getOriginX());
+                break;
+        }
+
+        setY(getOriginY());
+        setOwerflow(false);
 }
