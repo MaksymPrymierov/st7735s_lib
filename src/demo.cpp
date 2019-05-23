@@ -14,6 +14,8 @@ int main()
 	first_evil_car.move(ST7735s::Object::vertical, ST7735s::Object::direction_down);
 	second_evil_car.move(ST7735s::Object::vertical, ST7735s::Object::direction_down);
 
+	player_car.setSpeed(2);
+
 	display.addObject(&first_evil_car);
 	display.addObject(&second_evil_car);
 	display.addObject(&player_car);

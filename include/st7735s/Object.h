@@ -21,6 +21,7 @@ namespace ST7735s
                         uint8_t y;
                         uint8_t w;
                         uint8_t h;
+                        uint8_t speed = 1;
                         uint16_t size;
                         uint16_t color;
                         uint16_t *buffer;
@@ -47,6 +48,7 @@ namespace ST7735s
                 inline uint8_t getOriginX() const { return origin_x; }
                 inline uint8_t getOriginY() const { return origin_y; }
                 inline uint8_t isIntersection() const { return d.intersection; }
+                inline uint8_t getSpeed() const { return d.speed; }
 
                 inline void move(bool move, bool move_dir) { d.move = move; d.move_dir = move_dir; d.moved = true; }
                 inline void stop() { d.moved = false; }
@@ -61,6 +63,7 @@ namespace ST7735s
                 inline void setOriginX(uint8_t x) { origin_x = x; }
                 inline void setOriginY(uint8_t y) { origin_y = y; }
                 inline void setIntersection(bool intersection) { d.intersection = intersection; }
+                inline void setSpeed(uint8_t speed) { d.speed = speed; }
 
                 virtual void resetOwerflow() { d.x = origin_x; d.y = origin_y; d.owerflow = false; }
 

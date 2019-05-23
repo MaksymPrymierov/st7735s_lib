@@ -158,10 +158,12 @@ void ST7735s::Display::updateObjects()
                 objects[iter]->update();
 
                 if (objects[iter]->getMove() && objects[iter]->isMoved()) {
-                        if (!objects[iter]->getMoveDir() && objects[iter]->getY() + 1 < height) {
-                                objects[iter]->setY(objects[iter]->getY() + 1);
-                        } else if (objects[iter]->getMoveDir() && objects[iter]->getY() - 1 > 0) {
-                                objects[iter]->setY(objects[iter]->getY() - 1);
+                        if (!objects[iter]->getMoveDir() &&
+                            objects[iter]->getY() + objects[iter]->getSpeed() < height) {
+                                objects[iter]->setY(objects[iter]->getY() + objects[iter]->getSpeed());
+                        } else if (objects[iter]->getMoveDir() &&
+                                   objects[iter]->getY() - objects[iter]->getSpeed() > 0) {
+                                objects[iter]->setY(objects[iter]->getY() - objects[iter]->getSpeed());
                         } else {
                                 objects[iter]->setOwerflow(true);
                                 if (objects[iter]->isOwerflowCtl()) {
@@ -169,10 +171,12 @@ void ST7735s::Display::updateObjects()
                                 }
                         }
                 } else if (!objects[iter]->getMove() && objects[iter]->isMoved()) {
-                        if (!objects[iter]->getMoveDir() && objects[iter]->getX() + 1 < widht) {
-                                objects[iter]->setX(objects[iter]->getX() + 1);
-                        } else if (objects[iter]->getMoveDir() && objects[iter]->getX() - 1 > 0) {
-                                objects[iter]->setX(objects[iter]->getX() - 1);
+                        if (!objects[iter]->getMoveDir() &&
+                             objects[iter]->getX() + objects[iter]->getSpeed() < widht) {
+                                objects[iter]->setX(objects[iter]->getX() + objects[iter]->getSpeed());
+                        } else if (objects[iter]->getMoveDir() &&
+                                   objects[iter]->getX() - objects[iter]->getSpeed() > 0) {
+                                objects[iter]->setX(objects[iter]->getX() - objects[iter]->getSpeed());
                         } else {
                                 objects[iter]->setOwerflow(true);
                                 if (objects[iter]->isOwerflowCtl()) {
