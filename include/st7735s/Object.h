@@ -68,6 +68,7 @@ namespace ST7735s
                 virtual void resetOwerflow() { d.x = origin_x; d.y = origin_y; d.owerflow = false; }
 
                 void fill(uint16_t color);
+                void fillImage(const char* path);
 
                 virtual void update();
 
@@ -97,10 +98,12 @@ namespace RG
                 EvilCar();
                 ~EvilCar() = default;
 
+                void update();
                 void resetOwerflow();
 
         private:
                 void draw();
+                uint32_t i = 0;
         };
 
         class PlayerCar : public ST7735s::Object
@@ -115,5 +118,6 @@ namespace RG
         private:
                 bool _need_exit = false;
                 void draw();
+                uint32_t i = 0;
         };
 };

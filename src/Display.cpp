@@ -15,8 +15,7 @@ ST7735s::Display::Display()
                 error = true;
         }
 
-        background = 0;
-        fill(background);
+        _fill(0x0000);
         object_metadata.fill(-1);
 }
 
@@ -47,8 +46,10 @@ void ST7735s::Display::drawUpdate()
 
 int ST7735s::Display::exec()
 {
-        while (true) {
-                _fill(background);
+        uint32_t speed = 1;
+        for (uint32_t i = 1; true; ++i) {
+                backgroundMove(speed);
+                updateBackground();
                 object_metadata.fill(-1);
 
                 handlerSygnals();
@@ -69,13 +70,17 @@ int ST7735s::Display::exec()
                         return 0;
                 }
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                if (!(i % 2000)) {
+                        ++speed;
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(15));
         }
 }
 
 void ST7735s::Display::_fill(uint16_t color)
 {
-        memset(frame_buffer, color, sizeof(frame_buffer)); 
+        memset(background, color, sizeof(background)); 
 }
 
 void ST7735s::Display::_setPixel(uint8_t x, uint8_t y, uint16_t color)
@@ -209,6 +214,15 @@ void ST7735s::Display::setPixel(uint8_t x, uint8_t y, uint16_t color)
         paint_queue.push(task);
 }
 
+void ST7735s::Display::fillImage(const char* path)
+{
+        int image_file = open(path, O_RDONLY);
+
+        read(image_file, background, sizeof(background));
+
+        close(image_file);
+}
+
 void ST7735s::Display::fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color)
 {
         struct paint_task task;
@@ -232,4 +246,18 @@ void ST7735s::Display::connect(bool* sygn, Display *disp, void (*handler)(Displa
         sygnal.disp = disp;
 
         sygnals.push_back(sygnal);
+}
+
+void ST7735s::Display::updateBackground()
+{
+        memcpy(frame_buffer, background, sizeof(frame_buffer));
+}
+
+void ST7735s::Display::backgroundMove(uint32_t len)
+{
+        uint16_t line[widht * len];
+
+        memcpy(line, (background + widht * height) - widht * len, sizeof(line));
+        memmove(background + widht * len, background, sizeof(background) - sizeof(line));
+        memcpy(background, line, sizeof(line));
 }

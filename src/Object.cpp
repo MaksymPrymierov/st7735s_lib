@@ -3,6 +3,8 @@
 #include <cstring>
 #include <cstdio>
 #include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
 
 void ST7735s::Object::update()
 {
@@ -36,15 +38,24 @@ void ST7735s::Object::fill(uint16_t color)
         memset(d.buffer, color, d.size * 2);
 }
 
+void ST7735s::Object::fillImage(const char *path)
+{
+        int image_file = open(path, O_RDONLY);
+
+        read(image_file, d.buffer, d.size * 2);
+
+        close(image_file);
+}
+
 RG::PlayerCar::PlayerCar() : Object()
 {
         setX(50);
         setOriginX(50);
         setY(119);
-        setOriginY(119);
-        setW(30);
-        setH(40);
-        setSize(30 * 40);
+        setOriginY(94);
+        setW(20);
+        setH(44);
+        setSize(20 * 44);
         setColor(0x543a);
         setOwerflowCtl(false);
 
@@ -72,7 +83,13 @@ void RG::PlayerCar::update()
 
         if (isIntersection()) {
                 _need_exit = true;
-        } 
+                fillImage("resources/boomcar.bin");
+        }
+
+        ++i;
+        if (!(i % 2000)) {
+                setSpeed(getSpeed() + 1);
+        }
 }
 
 RG::EvilCar::EvilCar() : ST7735s::Object()
@@ -81,9 +98,9 @@ RG::EvilCar::EvilCar() : ST7735s::Object()
         setOriginX(10);
         setY(0);
         setOriginY(0);
-        setW(30);
-        setH(40);
-        setSize(30 * 40);
+        setW(20);
+        setH(44);
+        setSize(20 * 44);
         setColor(0x3f14);
         
         allocBuffer();
@@ -112,4 +129,12 @@ void RG::EvilCar::resetOwerflow()
 
         setY(getOriginY());
         setOwerflow(false);
+}
+
+void RG::EvilCar::update()
+{
+        ++i;
+        if (!(i % 2000)) {
+                setSpeed(getSpeed() + 1);
+        }
 }
