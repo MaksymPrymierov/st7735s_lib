@@ -15,7 +15,7 @@ ST7735s::Display::Display()
                 error = true;
         }
 
-        _fill(0x0000);
+        fill(0x0000);
         object_metadata.fill(-1);
 }
 
@@ -32,13 +32,13 @@ void ST7735s::Display::drawUpdate()
 
                 switch (buffer.function) {
                 case paint_function::fill_screen:
-                        _fill(buffer.color);
+                        fill(buffer.color);
                         break;
                 case paint_function::set_pixel:
-                        _setPixel(buffer.x, buffer.y, buffer.color);
+                        setPixel(buffer.x, buffer.y, buffer.color);
                         break;
                 case paint_function::fill_rect:
-                        _fillRect(buffer.x, buffer.y, buffer.w, buffer.h, buffer.color);
+                        fillRect(buffer.x, buffer.y, buffer.w, buffer.h, buffer.color);
                         break;
                 }
         }
@@ -57,16 +57,14 @@ int ST7735s::Display::exec()
                 drawUpdate();
                 drawObjects();
 
-                frame_buffer_file = open(frame_buffer_path.data(), O_WRONLY);
-                if (error) {
-                        std::cerr << "Executable error\n" << std::endl;
-                        return -1;
-                }
-
-                write(frame_buffer_file, frame_buffer, sizeof(frame_buffer));
-                close(frame_buffer_file);
+                update();
 
                 if (need_exit) {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        fillImage("resources/dead.bin");
+                        updateBackground();
+                        update();
+
                         return 0;
                 }
 
@@ -78,12 +76,26 @@ int ST7735s::Display::exec()
         }
 }
 
-void ST7735s::Display::_fill(uint16_t color)
+int ST7735s::Display::update()
+{
+                frame_buffer_file = open(frame_buffer_path.data(), O_WRONLY);
+                if (error) {
+                        std::cerr << "Executable error\n" << std::endl;
+                        return -1;
+                }
+
+                write(frame_buffer_file, frame_buffer, sizeof(frame_buffer));
+                close(frame_buffer_file);
+
+                return 0;
+}
+
+void ST7735s::Display::fill(uint16_t color)
 {
         memset(background, color, sizeof(background)); 
 }
 
-void ST7735s::Display::_setPixel(uint8_t x, uint8_t y, uint16_t color)
+void ST7735s::Display::setPixel(uint8_t x, uint8_t y, uint16_t color)
 {
         if ((x >= widht) || (y >= height)) {
                 return;
@@ -110,7 +122,7 @@ int ST7735s::Display::getObjMetaData(uint8_t x, uint8_t y)
         return object_metadata[x + widht * y];
 }
 
- void ST7735s::Display::_fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color)
+ void ST7735s::Display::fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color)
  {
         if ((x >= widht) || (y >= height)) {
                 return;
@@ -136,7 +148,7 @@ int ST7735s::Display::getObjMetaData(uint8_t x, uint8_t y)
         for (std::vector<ST7735s::Object*>::size_type iter = 0; iter < objects.size(); ++iter) {
                 for (int i = 0; i < objects[iter]->getW(); ++i) {
                         for (int j = 0; j < objects[iter]->getH(); ++j) {
-                                _setPixel(objects[iter]->getX() + i, objects[iter]->getY() + j,
+                                setPixel(objects[iter]->getX() + i, objects[iter]->getY() + j,
                                           objects[iter]->getBuffer()[i + objects[iter]->getW() * j]);
                                 if (getObjMetaData(objects[iter]->getX() + i, objects[iter]->getY() + j) != -1) {
                                         objects[iter]->setIntersection(true);
@@ -192,28 +204,6 @@ void ST7735s::Display::updateObjects()
         }
 }
 
-void ST7735s::Display::fill(uint16_t color) 
-{
-        struct paint_task task;
-
-        task.function = paint_function::fill_screen;
-        task.color = color;
-
-        paint_queue.push(task);
-}
-
-void ST7735s::Display::setPixel(uint8_t x, uint8_t y, uint16_t color) 
-{
-        struct paint_task task;
-
-        task.function = paint_function::set_pixel;
-        task.x = x;
-        task.y = y;
-        task.color = color;
-
-        paint_queue.push(task);
-}
-
 void ST7735s::Display::fillImage(const char* path)
 {
         int image_file = open(path, O_RDONLY);
@@ -221,20 +211,6 @@ void ST7735s::Display::fillImage(const char* path)
         read(image_file, background, sizeof(background));
 
         close(image_file);
-}
-
-void ST7735s::Display::fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color)
-{
-        struct paint_task task;
-
-        task.function = paint_function::fill_rect;
-        task.x = x;
-        task.y = y;
-        task.w = w;
-        task.h = h;
-        task.color = color;
-
-        paint_queue.push(task);
 }
 
 void ST7735s::Display::connect(bool* sygn, Display *disp, void (*handler)(Display*))
@@ -256,7 +232,7 @@ void ST7735s::Display::updateBackground()
 void ST7735s::Display::backgroundMove(uint32_t len)
 {
         uint16_t line[widht * len];
-
+        
         memcpy(line, (background + widht * height) - widht * len, sizeof(line));
         memmove(background + widht * len, background, sizeof(background) - sizeof(line));
         memcpy(background, line, sizeof(line));

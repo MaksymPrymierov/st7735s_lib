@@ -51,8 +51,8 @@ RG::PlayerCar::PlayerCar() : Object()
 {
         setX(50);
         setOriginX(50);
-        setY(119);
-        setOriginY(94);
+        setY(116);
+        setOriginY(116);
         setW(20);
         setH(44);
         setSize(20 * 44);
@@ -73,10 +73,13 @@ void RG::PlayerCar::update()
 
         if (dir == -1) {
                 stop();
+                fillImage("resources/player.bin");
         } else if (dir) {
                 move(horizontal, direction_down);
+                fillImage("resources/right.bin");
         } else {
                 move(horizontal, direction_up);
+                fillImage("resources/left.bin");
         }
 
         fclose(file);
@@ -110,23 +113,7 @@ RG::EvilCar::EvilCar() : ST7735s::Object()
 
 void RG::EvilCar::resetOwerflow()
 {
-        int roadId = rand() % 3;
-
-        switch (roadId) {
-        case 0:
-                setX(10);
-                break;
-        case 1:
-                setX(50);
-                break;
-        case 2:
-                setX(90);
-                break;
-        default:
-                setX(getOriginX());
-                break;
-        }
-
+        setX(rand() % 100);
         setY(getOriginY());
         setOwerflow(false);
 }

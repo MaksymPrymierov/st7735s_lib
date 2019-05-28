@@ -33,6 +33,8 @@ namespace ST7735s
                 }
                 void connect(bool* sygnal, Display* disp, void (*handler)(Display*));
                 void backgroundMove(uint32_t len);
+                void updateBackground();
+                int update();
 
         private:
                 enum paint_function : uint8_t
@@ -58,6 +60,8 @@ namespace ST7735s
                 };
 
                 bool error = false;
+                bool need_exit = false;
+
                 int frame_buffer_file;
                 std::string_view frame_buffer_path;
                 uint16_t frame_buffer[size_buffer];
@@ -73,13 +77,8 @@ namespace ST7735s
                 void eventUpdate();
                 void drawObjects();
                 void updateObjects();
-                void updateBackground();
                 void setObjMetaData(uint8_t x, uint8_t y, int data);
                 int getObjMetaData(uint8_t x, uint8_t y);
-                void _fill(uint16_t color);
-                void _setPixel(uint8_t x, uint8_t y, uint16_t color);
-                void _fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color);
-                bool need_exit = false;
 
                 // handlers
                 void handlerSygnals();
