@@ -1,8 +1,11 @@
 #include <st7735s/Display.h>
 #include <st7735s/Object.h>
+#include <mh_fmd/Buzzer.h>
 
 int main()
 {
+    MH_FMD::Buzzer buzzer;
+    
 	ST7735s::Display display;
 
 	display.fillImage("resources/road.bin");
@@ -28,6 +31,11 @@ int main()
 	second_evil_car.fillImage("resources/evil2.bin");
 
 	display.connect(player_car.need_exit(), &display, ST7735s::Display::exit);
-
-	return display.exec();
+    
+    buzzer.noise_time(1);
+    
+	if(!display.exec()) 
+        buzzer.run();
+    
+    return 0;
 }
