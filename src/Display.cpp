@@ -62,13 +62,25 @@ int ST7735s::Display::exec()
                         std::cerr << "Executable error\n" << std::endl;
                         return -1;
                 }
-
+                
+                if (need_exit) {
+                        
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        
+                        fillImage("resources/deathscreen.bin");
+                        updateBackground();
+                        object_metadata.fill(-1);
+                        
+                        write(frame_buffer_file, frame_buffer, sizeof(frame_buffer));
+                        close(frame_buffer_file);
+                        
+                        return 0;
+                }
+                
                 write(frame_buffer_file, frame_buffer, sizeof(frame_buffer));
                 close(frame_buffer_file);
 
-                if (need_exit) {
-                        return 0;
-                }
+                
 
                 if (!(i % 2000)) {
                         ++speed;
@@ -236,7 +248,7 @@ void ST7735s::Display::fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint
 
         paint_queue.push(task);
 }
-
+            
 void ST7735s::Display::connect(bool* sygn, Display *disp, void (*handler)(Display*))
 {
         struct handler_sygnal sygnal;

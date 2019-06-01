@@ -9,6 +9,10 @@ int main()
 	ST7735s::Display display;
 
 	display.fillImage("resources/road.bin");
+    
+    buzzer.noise_time(1);
+    
+    buzzer.run();
 
 	RG::EvilCar first_evil_car;
 	RG::EvilCar second_evil_car;
@@ -32,10 +36,9 @@ int main()
 
 	display.connect(player_car.need_exit(), &display, ST7735s::Display::exit);
     
-    buzzer.noise_time(1);
-    
-	if(!display.exec()) 
+	if(!display.exec()) {
         buzzer.run();
+    }
     
     return 0;
 }
