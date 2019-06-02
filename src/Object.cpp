@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include <cstdio>
+#include <stdlib.h>
+#include <ctime> 
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
@@ -113,6 +115,7 @@ RG::EvilCar::EvilCar() : ST7735s::Object()
 
 void RG::EvilCar::resetOwerflow()
 {
+        srand(time(0));
         setX(rand() % 100);
         setY(getOriginY());
         setOwerflow(false);

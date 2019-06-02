@@ -35,6 +35,7 @@ namespace ST7735s
                 void backgroundMove(uint32_t len);
                 void updateBackground();
                 int update();
+                void screenEnroll(uint32_t len);
 
         private:
                 enum paint_function : uint8_t

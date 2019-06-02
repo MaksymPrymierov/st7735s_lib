@@ -1,11 +1,20 @@
 #include <st7735s/Display.h>
 #include <st7735s/Object.h>
+#include <mh_fmd/Buzzer.h>
 
 #include <thread>
 
 int main()
 {
+        MH_FMD::Buzzer buzzer;
+    
 	ST7735s::Display display;
+
+	display.fillImage("resources/road.bin");
+    
+        buzzer.noise_time(1);
+    
+        buzzer.run();
 
 	RG::EvilCar first_evil_car;
 	RG::EvilCar second_evil_car;
@@ -34,5 +43,9 @@ int main()
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	display.fillImage("resources/road.bin");
 
-	return display.exec();
+	if(!display.exec()) {
+                buzzer.run();
+        }
+    
+        return 0;
 }

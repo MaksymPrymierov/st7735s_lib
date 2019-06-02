@@ -17,6 +17,7 @@ ADD_LIBRARY (
         ST7735s_lib STATIC
         src/Display.cpp
         src/Object.cpp
+        src/Buzzer.cpp
 )
 
 TARGET_LINK_LIBRARIES (
