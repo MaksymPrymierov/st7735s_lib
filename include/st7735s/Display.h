@@ -33,6 +33,7 @@ namespace ST7735s
                 }
                 void connect(bool* sygnal, Display* disp, void (*handler)(Display*));
                 void backgroundMove(uint32_t len);
+                void screenEnroll(uint32_t len);
 
         private:
                 enum paint_function : uint8_t

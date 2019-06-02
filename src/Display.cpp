@@ -63,24 +63,17 @@ int ST7735s::Display::exec()
                         return -1;
                 }
                 
-                if (need_exit) {
-                        
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                        
-                        fillImage("resources/deathscreen.bin");
-                        updateBackground();
-                        object_metadata.fill(-1);
-                        
-                        write(frame_buffer_file, frame_buffer, sizeof(frame_buffer));
-                        close(frame_buffer_file);
-                        
-                        return 0;
-                }
-                
                 write(frame_buffer_file, frame_buffer, sizeof(frame_buffer));
                 close(frame_buffer_file);
 
-                
+                if (need_exit) {
+                        
+                        screenEnroll(1);
+                        
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        
+                        return 0;
+                }
 
                 if (!(i % 2000)) {
                         ++speed;
@@ -272,4 +265,35 @@ void ST7735s::Display::backgroundMove(uint32_t len)
         memcpy(line, (background + widht * height) - widht * len, sizeof(line));
         memmove(background + widht * len, background, sizeof(background) - sizeof(line));
         memcpy(background, line, sizeof(line));
+        
+}
+
+void ST7735s::Display::screenEnroll(uint32_t len)
+{
+        uint16_t line[widht * len];
+        uint16_t tmp_background[size_buffer];
+        
+        
+        int image_file = open("resources/deathscreen.bin", O_RDONLY);
+
+        read(image_file, tmp_background, sizeof(tmp_background));
+
+        close(image_file);
+
+        for(uint32_t i = 0; i < height/len; i++) {
+            
+            memcpy(line, tmp_background + widht * len * i, sizeof(line));
+            memmove(background, background + widht * len, sizeof(background) - sizeof(line));
+            memcpy((background + widht * height) - widht * len, line, sizeof(line));
+            
+            updateBackground();
+            
+            frame_buffer_file = open(frame_buffer_path.data(), O_WRONLY);
+                
+            write(frame_buffer_file, frame_buffer, sizeof(frame_buffer));
+            close(frame_buffer_file);
+            
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                        
+        }
 }
